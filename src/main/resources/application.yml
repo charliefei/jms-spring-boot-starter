@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: mq-spring-boot-starter
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+mq:
+  type: activemq
+  activemq:
+    user: admin
+    password: admin
+    broker-url: tcp://localhost
+
