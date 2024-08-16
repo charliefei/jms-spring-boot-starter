@@ -74,12 +74,12 @@ public class ActiveMQService implements MQService {
                     log.error("ActiveMQService 异常日志:", e);
                 }
             });
+            log.info("ActiveMQ==>{}==>监听启动成功", recvMsg);
         } catch (Exception e) {
             log.error("ActiveMQService==>{}==>监听失败", recvMsg.toString());
             log.error("ActiveMQService 异常日志:", e);
             throw new Exception("ActiveMQService连接失败 brokerUrl:" + activemq.getBrokerUrl());
         }
-        log.info("ActiveMQ==>{}==>监听启动成功", recvMsg);
     }
 
     private void sendMsg(MQSendMessage sendMessage, boolean isTopic) throws Exception {

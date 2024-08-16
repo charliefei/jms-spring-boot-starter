@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MQConfigProperties {
     private String type;
     private ActiveMQ activemq;
-    private RocketMQ rocketmq;
+    private TongLQ tlq;
 
     @Data
     public static class ActiveMQ {
@@ -18,7 +18,15 @@ public class MQConfigProperties {
     }
 
     @Data
-    public static class RocketMQ {
+    public static class TongLQ {
+        private Naming naming;
+        private String queueFactory;
+        private String topicFactory;
 
+        @Data
+        public static class Naming {
+            private String factory;
+            private String url;
+        }
     }
 }

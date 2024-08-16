@@ -10,4 +10,9 @@ mq:
     user: admin
     password: admin
     broker-url: tcp://localhost
-
+  tlq:
+    naming:
+      factory: xx
+      url: xx
+    queue-factory: xx
+    topic-factory: xx
