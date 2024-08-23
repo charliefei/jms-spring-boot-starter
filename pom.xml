@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.feirui</groupId>
-    <artifactId>mq-spring-boot-starter</artifactId>
+    <artifactId>jms-spring-boot-starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>mq-spring-boot-starter</name>
