@@ -35,7 +35,7 @@ public class TongMQService implements MQService {
         MessageProducer sendProducer = null;
 
         TextMessage textMessage;
-        Context ctx = this.getContext();
+        Context ctx = createContext();
         try {
             sendTongConnFactory = (ConnectionFactory) ctx.lookup(tongLQ.getQueueFactory());
             sendConn = sendTongConnFactory.createConnection();
@@ -64,7 +64,7 @@ public class TongMQService implements MQService {
         Topic sendTopic;
 
         TextMessage textMessage;
-        Context ctx = this.getContext();
+        Context ctx = createContext();
         try {
             topicConnFactory = (TopicConnectionFactory) ctx.lookup(tongLQ.getTopicFactory());
             topicConn = topicConnFactory.createTopicConnection();
@@ -86,7 +86,7 @@ public class TongMQService implements MQService {
 
     @Override
     public void recvMsg(MQRecvMessage recvMessage, MQCallback callback) throws Exception {
-        Context context = this.getContext();
+        Context context = createContext();
         try {
             if (recvMessage.isTopic()) {
                 TopicConnectionFactory recvTopicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
@@ -125,26 +125,14 @@ public class TongMQService implements MQService {
         } catch (Exception e) {
             log.error("TongMQService==>{}==>监听失败", recvMessage.toString());
             log.error("TongMQService 异常日志:", e);
-            throw new Exception("TongMQService连接失败 brokerUrl:" + tongLQ.getNaming().getUrl() + "异常信息:" + e.getMessage());
+            throw new Exception("TongMQService连接失败 brokerUrl:" + tongLQ.getNaming().getProviderUrl() + "异常信息:" + e.getMessage());
         }
     }
 
-    private Properties getProperties() {
+    private Context createContext() throws NamingException {
         Properties pro = new Properties();
-        pro.setProperty("java.naming.factory.initial", tongLQ.getNaming().getFactory());
-        pro.setProperty("java.naming.provider.url", tongLQ.getNaming().getUrl());
-        return pro;
-    }
-
-    private Context getContext() {
-        Properties pro = this.getProperties();
-        Context ctx = null;
-        try {
-            ctx = new InitialContext(pro);
-        } catch (NamingException e) {
-            log.error("remoteURL:{}", tongLQ.getNaming().getUrl());
-            log.error("NamingException:", e);
-        }
-        return ctx;
+        pro.setProperty(Context.INITIAL_CONTEXT_FACTORY, tongLQ.getNaming().getFactory());
+        pro.setProperty(Context.PROVIDER_URL, tongLQ.getNaming().getProviderUrl());
+        return new InitialContext(pro);
     }
 }

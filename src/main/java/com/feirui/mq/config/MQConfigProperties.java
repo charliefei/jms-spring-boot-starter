@@ -26,7 +26,7 @@ public class MQConfigProperties {
         @Data
         public static class Naming {
             private String factory;
-            private String url;
+            private String providerUrl;
         }
     }
 }

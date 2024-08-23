@@ -13,6 +13,6 @@ mq:
   tlq:
     naming:
       factory: xx
-      url: xx
+      provider-url: xx
     queue-factory: xx
     topic-factory: xx
