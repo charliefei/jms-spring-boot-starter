@@ -1,5 +1,6 @@
 package com.feirui.mq;
 
+import com.feirui.mq.domain.dto.MQSendMessage;
 import com.feirui.mq.service.JmsService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,13 @@ class ApplicationTests {
     JmsService jmsService;
 
     @Test
-    void contextLoads() {
+    void contextLoads() throws Exception {
         System.out.println(jmsService);
+        MQSendMessage sendMessage = MQSendMessage.builder()
+                .body("hello!!!")
+                .topic("test")
+                .build();
+        jmsService.sendMsgWithTopic(sendMessage);
     }
 
 }

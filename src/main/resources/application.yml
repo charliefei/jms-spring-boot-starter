@@ -9,7 +9,7 @@ mq:
   activemq:
     user: admin
     password: admin
-    broker-url: tcp://localhost
+    broker-url: tcp://localhost:61616
   tlq:
     naming:
       factory: xx
