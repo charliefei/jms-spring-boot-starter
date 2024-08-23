@@ -26,15 +26,62 @@ public class TongMQService implements MQService {
         tongLQ = mqConfigProperties.getTlq();
     }
 
-
     @Override
     public void sendMsgWithQueue(MQSendMessage message) throws Exception {
-        sendMsg(message, false);
+        ConnectionFactory sendTongConnFactory;
+        Connection sendConn = null;
+        Session sendSession = null;
+        Queue sendQueue;
+        MessageProducer sendProducer = null;
+
+        TextMessage textMessage;
+        Context ctx = this.getContext();
+        try {
+            sendTongConnFactory = (ConnectionFactory) ctx.lookup(tongLQ.getQueueFactory());
+            sendConn = sendTongConnFactory.createConnection();
+            sendSession = sendConn.createSession(false, 1);
+            sendConn.start();
+            sendQueue = (Queue) ctx.lookup(message.getConfig().getQueue());
+            sendProducer = sendSession.createProducer(sendQueue);
+            textMessage = sendSession.createTextMessage(message.getBody());
+            sendProducer.send(textMessage);
+            log.info("TongMQService {}消息发送QUEUE成功:{}", message.getConfig().getQueue(), message.getBody());
+        } catch (Exception e) {
+            log.error("TongMQService=====>发送消息异常:", e);
+        } finally {
+            if (sendConn != null) sendConn.close();
+            if (sendSession != null) sendSession.close();
+            if (sendProducer != null) sendProducer.close();
+        }
     }
 
     @Override
     public void sendMsgWithTopic(MQSendMessage message) throws Exception {
-        sendMsg(message, true);
+        TopicConnectionFactory topicConnFactory;
+        TopicConnection topicConn = null;
+        TopicSession topicSession = null;
+        TopicPublisher publisher = null;
+        Topic sendTopic;
+
+        TextMessage textMessage;
+        Context ctx = this.getContext();
+        try {
+            topicConnFactory = (TopicConnectionFactory) ctx.lookup(tongLQ.getTopicFactory());
+            topicConn = topicConnFactory.createTopicConnection();
+            topicSession = topicConn.createTopicSession(false, 1);
+            sendTopic = (Topic) ctx.lookup(message.getConfig().getTopic());
+            topicConn.start();
+            publisher = topicSession.createPublisher(sendTopic);
+            textMessage = topicSession.createTextMessage(message.getBody());
+            publisher.publish(textMessage);
+            log.info("TongMQService {}消息发送TOPIC成功:{}", message.getConfig().getTopic(), message.getBody());
+        } catch (Exception e) {
+            log.error("TongMQService=====>发送消息异常:", e);
+        } finally {
+            if (topicConn != null) topicConn.close();
+            if (topicSession != null) topicSession.close();
+            if (publisher != null) publisher.close();
+        }
     }
 
     @Override
@@ -79,68 +126,6 @@ public class TongMQService implements MQService {
             log.error("TongMQService==>{}==>监听失败", recvMessage.toString());
             log.error("TongMQService 异常日志:", e);
             throw new Exception("TongMQService连接失败 brokerUrl:" + tongLQ.getNaming().getUrl() + "异常信息:" + e.getMessage());
-        }
-    }
-
-    private void sendMsg(MQSendMessage sendMessage, boolean isTopic) throws JMSException, NamingException {
-        ConnectionFactory sendTongConnFactory;
-        Connection sendConn = null;
-        Session sendSession = null;
-        Queue sendQueue;
-        MessageProducer sendProducer = null;
-        TopicConnectionFactory topicConnFactory;
-        TopicConnection topicConn = null;
-        TopicSession topicSession = null;
-        TopicPublisher publisher = null;
-        Topic sendTopic;
-        TextMessage message;
-        Context ctx = this.getContext();
-        try {
-            if (isTopic) {
-                topicConnFactory = (TopicConnectionFactory) ctx.lookup(tongLQ.getTopicFactory());
-                topicConn = topicConnFactory.createTopicConnection();
-                topicSession = topicConn.createTopicSession(false, 1);
-                sendTopic = (Topic) ctx.lookup(sendMessage.getConfig().getTopic());
-                topicConn.start();
-                publisher = topicSession.createPublisher(sendTopic);
-                message = topicSession.createTextMessage(sendMessage.getBody());
-                publisher.publish(message);
-                log.info("TongMQService {}消息发送TOPIC成功:{}", sendMessage.getConfig().getTopic(), sendMessage.getBody());
-            } else {
-                sendTongConnFactory = (ConnectionFactory) ctx.lookup(tongLQ.getQueueFactory());
-                sendConn = sendTongConnFactory.createConnection();
-                sendSession = sendConn.createSession(false, 1);
-                sendConn.start();
-                sendQueue = (Queue) ctx.lookup(sendMessage.getConfig().getQueue());
-                sendProducer = sendSession.createProducer(sendQueue);
-                message = sendSession.createTextMessage(sendMessage.getBody());
-                sendProducer.send(message);
-                log.info("TongMQService {}消息发送QUEUE成功:{}", sendMessage.getConfig().getQueue(), sendMessage.getBody());
-            }
-        } catch (Exception e) {
-            log.error("TongMQService=====发送消息异常:", e);
-        } finally {
-            if (sendProducer != null) {
-                sendProducer.close();
-            }
-            if (sendSession != null) {
-                sendSession.close();
-            }
-            if (sendConn != null) {
-                sendConn.close();
-            }
-            if (topicConn != null) {
-                topicConn.close();
-            }
-            if (topicSession != null) {
-                topicSession.close();
-            }
-            if (publisher != null) {
-                publisher.close();
-            }
-            if (ctx != null) {
-                ctx.close();
-            }
         }
     }
 
