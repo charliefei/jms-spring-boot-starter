@@ -35,14 +35,14 @@ public class MQListenerScanner implements ApplicationListener<ContextRefreshedEv
                     if (mqListener != null) {
                         ReflectionUtils.makeAccessible(method);
                         Class<?>[] types = method.getParameterTypes();
-                        if (types.length != 2 || types[0] != String.class || types[1] != MQRecvMessage.class) {
+                        if (types.length != 1 || types[0] != String.class) {
                             throw new IllegalArgumentException("错误的参数类型，请参考MQCallback.onMessage() ：" + method);
                         }
 
                         MQRecvMessage mqRecvMessage = new MQRecvMessage(mqListener.queue(), mqListener.topic());
                         try {
                             // 核心
-                            service.recvMsg(mqRecvMessage, (message, recvMessage) -> method.invoke(bean, message, recvMessage));
+                            service.recvMsg(mqRecvMessage, (message) -> method.invoke(bean, message));
                         } catch (Exception var16) {
                             log.error("MQ 启动消息监听，链接失败", var16);
                             isReload = true;

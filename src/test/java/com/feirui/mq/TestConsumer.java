@@ -2,7 +2,6 @@ package com.feirui.mq;
 
 import com.feirui.mq.aspect.MQListener;
 import com.feirui.mq.aspect.MQListenerContainer;
-import com.feirui.mq.domain.dto.MQRecvMessage;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,8 +15,7 @@ import org.springframework.stereotype.Component;
 public class TestConsumer {
 
     @MQListener(topic = "test")
-    public void onMessage(String text, MQRecvMessage recvMessage) {
+    public void onMessage(String text) {
         System.out.println(text);
-        System.out.println(recvMessage);
     }
 }

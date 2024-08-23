@@ -3,8 +3,8 @@ package com.feirui.mq.service.impl;
 import com.feirui.mq.config.MQConfigProperties;
 import com.feirui.mq.domain.dto.MQRecvMessage;
 import com.feirui.mq.domain.dto.MQSendMessage;
-import com.feirui.mq.service.MQCallback;
 import com.feirui.mq.service.JmsService;
+import com.feirui.mq.service.MQCallback;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
@@ -103,7 +103,7 @@ public class TongMQService implements JmsService {
             recvConsumer.setMessageListener(message -> {
                 try {
                     TextMessage textMessage = (TextMessage) message;
-                    callback.onMessage(textMessage.getText(), recvMessage);
+                    callback.onMessage(textMessage.getText());
                 } catch (Exception e) {
                     log.error("TongMQService==>{}==>监听失败", recvMessage);
                     log.error("TongMQService 异常日志:", e);

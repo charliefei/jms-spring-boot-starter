@@ -25,7 +25,7 @@ public class ActiveMQService implements JmsService {
         activemq = mqConfigProperties.getActivemq();
         connectionFactory = connectionFactory();
     }
-    
+
     public ActiveMQConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory activeMqConnectionFactory = new ActiveMQConnectionFactory(activemq.getUser(),
                 activemq.getPassword(),
@@ -74,7 +74,7 @@ public class ActiveMQService implements JmsService {
             consumer.setMessageListener(message -> {
                 try {
                     TextMessage textMsg = (TextMessage) message;
-                    callback.onMessage(textMsg.getText(), recvMsg);
+                    callback.onMessage(textMsg.getText());
                 } catch (Exception e) {
                     log.error("ActiveMQService==>{}==>监听失败", recvMsg);
                     log.error("ActiveMQService 异常日志:", e);
