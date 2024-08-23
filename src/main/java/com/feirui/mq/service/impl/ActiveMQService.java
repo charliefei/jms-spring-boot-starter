@@ -100,20 +100,13 @@ public class ActiveMQService implements MQService {
             TextMessage msg = session.createTextMessage();
             msg.setText(sendMessage.getBody());
             producer.send(msg);
-            log.info("发送ActiveMQService消息成功===={}", sendMessage);
+            log.info("发送ActiveMQService消息成功====>sendMessage={}", sendMessage);
         } catch (Exception e) {
-            log.error("发送ActiveMQService消息异常===={}", sendMessage);
-            throw new Exception("发送ActiveMQService消息异常===={}", e);
+            log.error("发送ActiveMQService消息异常====>sendMessage={} error={}", sendMessage, e.getMessage());
         } finally {
-            if (producer != null) {
-                producer.close();
-            }
-            if (session != null) {
-                session.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
+            if (producer != null) producer.close();
+            if (session != null) session.close();
+            if (connection != null) connection.close();
         }
     }
 
