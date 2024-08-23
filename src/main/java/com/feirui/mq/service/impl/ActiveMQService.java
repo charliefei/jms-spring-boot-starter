@@ -91,9 +91,9 @@ public class ActiveMQService implements MQService {
             session = connection.createSession(false, 1);
             connection.start();
             if (isTopic) {
-                destination = session.createTopic(sendMessage.getConfig().getTopic());
+                destination = session.createTopic(sendMessage.getTopic());
             } else {
-                destination = session.createQueue(sendMessage.getConfig().getQueue());
+                destination = session.createQueue(sendMessage.getQueue());
             }
             producer = session.createProducer(destination);
             TextMessage msg = session.createTextMessage();

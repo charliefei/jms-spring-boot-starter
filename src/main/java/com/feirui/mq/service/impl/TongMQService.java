@@ -44,11 +44,11 @@ public class TongMQService implements MQService {
             sendConn = queueConnFactory.createConnection();
             sendSession = sendConn.createSession(false, 1);
             sendConn.start();
-            Queue sendQueue = (Queue) context.lookup(message.getConfig().getQueue());
+            Queue sendQueue = (Queue) context.lookup(message.getQueue());
             sendProducer = sendSession.createProducer(sendQueue);
             TextMessage textMessage = sendSession.createTextMessage(message.getBody());
             sendProducer.send(textMessage);
-            log.info("TongMQService {}消息发送QUEUE成功:{}", message.getConfig().getQueue(), message.getBody());
+            log.info("TongMQService {}消息发送QUEUE成功:{}", message.getQueue(), message.getBody());
         } catch (Exception e) {
             log.error("TongMQService=====>发送消息异常:", e);
         } finally {
@@ -67,11 +67,11 @@ public class TongMQService implements MQService {
             topicConn = topicConnFactory.createTopicConnection();
             topicSession = topicConn.createTopicSession(false, 1);
             topicConn.start();
-            Topic topic = (Topic) context.lookup(message.getConfig().getTopic());
+            Topic topic = (Topic) context.lookup(message.getTopic());
             publisher = topicSession.createPublisher(topic);
             TextMessage textMessage = topicSession.createTextMessage(message.getBody());
             publisher.publish(textMessage);
-            log.info("TongMQService {}消息发送TOPIC成功:{}", message.getConfig().getTopic(), message.getBody());
+            log.info("TongMQService {}消息发送TOPIC成功:{}", message.getTopic(), message.getBody());
         } catch (Exception e) {
             log.error("TongMQService=====>发送消息异常:", e);
         } finally {
