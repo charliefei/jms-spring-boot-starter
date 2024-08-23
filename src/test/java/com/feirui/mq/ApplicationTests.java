@@ -1,6 +1,6 @@
 package com.feirui.mq;
 
-import com.feirui.mq.service.MQService;
+import com.feirui.mq.service.JmsService;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,11 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 class ApplicationTests {
 
     @Resource
-    MQService mqService;
+    JmsService jmsService;
 
     @Test
     void contextLoads() {
-        System.out.println(mqService);
+        System.out.println(jmsService);
     }
 
 }

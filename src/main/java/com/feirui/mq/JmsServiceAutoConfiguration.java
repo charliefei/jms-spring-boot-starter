@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(MQConfigProperties.class)
-public class MQServiceAutoConfiguration {
+public class JmsServiceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "mq.type", havingValue = "activemq")
     public ActiveMQService activeMQService() {

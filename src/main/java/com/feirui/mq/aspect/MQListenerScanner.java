@@ -1,7 +1,7 @@
 package com.feirui.mq.aspect;
 
 import com.feirui.mq.domain.dto.MQRecvMessage;
-import com.feirui.mq.service.MQService;
+import com.feirui.mq.service.JmsService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
@@ -22,7 +22,7 @@ public class MQListenerScanner implements ApplicationListener<ContextRefreshedEv
     @Override
     @SneakyThrows
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        MQService service = event.getApplicationContext().getBean(MQService.class);
+        JmsService service = event.getApplicationContext().getBean(JmsService.class);
         if (event.getApplicationContext().getParent() == null
                 || event.getApplicationContext().getParent().getParent() == null
                 || event.getApplicationContext().getParent().getParent().getParent() == null) {

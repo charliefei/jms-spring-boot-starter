@@ -4,7 +4,7 @@ import com.feirui.mq.config.MQConfigProperties;
 import com.feirui.mq.domain.dto.MQRecvMessage;
 import com.feirui.mq.domain.dto.MQSendMessage;
 import com.feirui.mq.service.MQCallback;
-import com.feirui.mq.service.MQService;
+import com.feirui.mq.service.JmsService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
@@ -17,7 +17,7 @@ import javax.naming.NamingException;
 import java.util.Properties;
 
 @Slf4j
-public class TongMQService implements MQService {
+public class TongMQService implements JmsService {
     private MQConfigProperties.TongLQ tongLQ;
     @Resource
     private MQConfigProperties mqConfigProperties;
