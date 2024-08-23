@@ -7,6 +7,7 @@ import com.feirui.mq.service.MQCallback;
 import com.feirui.mq.service.MQService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.jms.*;
@@ -21,29 +22,33 @@ public class TongMQService implements MQService {
     @Resource
     private MQConfigProperties mqConfigProperties;
 
+    private static Context context;
+
+    private static Connection sendConn = null;
+    private static Session sendSession = null;
+    private static MessageProducer sendProducer = null;
+
+    private static TopicConnection topicConn = null;
+    private static TopicSession topicSession = null;
+    private static TopicPublisher publisher = null;
+
     @PostConstruct
+    @SneakyThrows
     public void init() {
         tongLQ = mqConfigProperties.getTlq();
+        context = createContext();
     }
 
     @Override
     public void sendMsgWithQueue(MQSendMessage message) throws Exception {
-        ConnectionFactory sendTongConnFactory;
-        Connection sendConn = null;
-        Session sendSession = null;
-        Queue sendQueue;
-        MessageProducer sendProducer = null;
-
-        TextMessage textMessage;
-        Context ctx = createContext();
         try {
-            sendTongConnFactory = (ConnectionFactory) ctx.lookup(tongLQ.getQueueFactory());
+            ConnectionFactory sendTongConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
             sendConn = sendTongConnFactory.createConnection();
             sendSession = sendConn.createSession(false, 1);
             sendConn.start();
-            sendQueue = (Queue) ctx.lookup(message.getConfig().getQueue());
+            Queue sendQueue = (Queue) context.lookup(message.getConfig().getQueue());
             sendProducer = sendSession.createProducer(sendQueue);
-            textMessage = sendSession.createTextMessage(message.getBody());
+            TextMessage textMessage = sendSession.createTextMessage(message.getBody());
             sendProducer.send(textMessage);
             log.info("TongMQService {}消息发送QUEUE成功:{}", message.getConfig().getQueue(), message.getBody());
         } catch (Exception e) {
@@ -57,22 +62,14 @@ public class TongMQService implements MQService {
 
     @Override
     public void sendMsgWithTopic(MQSendMessage message) throws Exception {
-        TopicConnectionFactory topicConnFactory;
-        TopicConnection topicConn = null;
-        TopicSession topicSession = null;
-        TopicPublisher publisher = null;
-        Topic sendTopic;
-
-        TextMessage textMessage;
-        Context ctx = createContext();
         try {
-            topicConnFactory = (TopicConnectionFactory) ctx.lookup(tongLQ.getTopicFactory());
+            TopicConnectionFactory topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
             topicConn = topicConnFactory.createTopicConnection();
             topicSession = topicConn.createTopicSession(false, 1);
-            sendTopic = (Topic) ctx.lookup(message.getConfig().getTopic());
+            Topic topic = (Topic) context.lookup(message.getConfig().getTopic());
             topicConn.start();
-            publisher = topicSession.createPublisher(sendTopic);
-            textMessage = topicSession.createTextMessage(message.getBody());
+            publisher = topicSession.createPublisher(topic);
+            TextMessage textMessage = topicSession.createTextMessage(message.getBody());
             publisher.publish(textMessage);
             log.info("TongMQService {}消息发送TOPIC成功:{}", message.getConfig().getTopic(), message.getBody());
         } catch (Exception e) {
@@ -86,13 +83,12 @@ public class TongMQService implements MQService {
 
     @Override
     public void recvMsg(MQRecvMessage recvMessage, MQCallback callback) throws Exception {
-        Context context = createContext();
         try {
             if (recvMessage.isTopic()) {
                 TopicConnectionFactory recvTopicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
                 TopicConnection recvTopicConn = recvTopicConnFactory.createTopicConnection();
                 TopicSession recvTopicSession = recvTopicConn.createTopicSession(false, 1);
-                Topic recvTopic = (Topic) context.lookup(recvMessage.getQueue());
+                Topic recvTopic = (Topic) context.lookup(recvMessage.getTopic());
                 recvTopicConn.start();
                 TopicSubscriber subscriber = recvTopicSession.createSubscriber(recvTopic);
                 subscriber.setMessageListener(message -> {
@@ -100,8 +96,8 @@ public class TongMQService implements MQService {
                         TextMessage textMessage = (TextMessage) message;
                         callback.onMessage(textMessage.getText(), recvMessage);
                     } catch (Exception e) {
-                        log.error("ActiveMQService==>{}==>监听失败", recvMessage);
-                        log.error("ActiveMQService 异常日志:", e);
+                        log.error("TongMQService==>{}==>监听失败", recvMessage);
+                        log.error("TongMQService 异常日志:", e);
                     }
                 });
             } else {
@@ -116,8 +112,8 @@ public class TongMQService implements MQService {
                         TextMessage textMessage = (TextMessage) message;
                         callback.onMessage(textMessage.getText(), recvMessage);
                     } catch (Exception e) {
-                        log.error("ActiveMQService==>{}==>监听失败", recvMessage);
-                        log.error("ActiveMQService 异常日志:", e);
+                        log.error("TongMQService==>{}==>监听失败", recvMessage);
+                        log.error("TongMQService 异常日志:", e);
                     }
                 });
             }
