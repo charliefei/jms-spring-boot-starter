@@ -5,6 +5,7 @@ import com.feirui.mq.domain.dto.MQRecvMessage;
 import com.feirui.mq.domain.dto.MQSendMessage;
 import com.feirui.mq.service.MQCallback;
 import com.feirui.mq.service.JmsService;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -17,9 +18,15 @@ public class ActiveMQService implements JmsService {
     @Resource
     private MQConfigProperties mqConfigProperties;
     private MQConfigProperties.ActiveMQ activemq;
+    private static ActiveMQConnectionFactory connectionFactory;
 
-    public ActiveMQConnectionFactory connectionFactory() {
+    @PostConstruct
+    public void init() {
         activemq = mqConfigProperties.getActivemq();
+        connectionFactory = connectionFactory();
+    }
+    
+    public ActiveMQConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory activeMqConnectionFactory = new ActiveMQConnectionFactory(activemq.getUser(),
                 activemq.getPassword(),
                 activemq.getBrokerUrl());
@@ -55,7 +62,7 @@ public class ActiveMQService implements JmsService {
         Destination destination;
         MessageConsumer consumer;
         try {
-            connection = this.connectionFactory().createConnection();
+            connection = connectionFactory.createConnection();
             session = connection.createSession(Boolean.FALSE, 1);
             connection.start();
             if (recvMsg.isTopic()) {
@@ -87,7 +94,7 @@ public class ActiveMQService implements JmsService {
         MessageProducer producer = null;
         Destination destination;
         try {
-            connection = this.connectionFactory().createConnection();
+            connection = connectionFactory.createConnection();
             session = connection.createSession(false, 1);
             connection.start();
             if (isTopic) {
