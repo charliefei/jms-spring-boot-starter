@@ -20,8 +20,8 @@ public class MQConfigProperties {
     @Data
     public static class TongLQ {
         private Naming naming;
-        private String queueFactory;
-        private String topicFactory;
+        private String queueConnectionFactory;
+        private String topicConnectionFactory;
 
         @Data
         public static class Naming {

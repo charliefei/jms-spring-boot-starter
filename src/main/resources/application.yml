@@ -14,5 +14,5 @@ mq:
     naming:
       factory: xx
       provider-url: xx
-    queue-factory: xx
-    topic-factory: xx
+    queue-connection-factory: xx
+    topic-connection-factory: xx
