@@ -23,23 +23,25 @@ public class TongMQService implements MQService {
     private MQConfigProperties mqConfigProperties;
 
     private static Context context;
+    private static ConnectionFactory queueConnFactory;
+    private static TopicConnectionFactory topicConnFactory;
 
     @PostConstruct
     @SneakyThrows
     public void init() {
         tongLQ = mqConfigProperties.getTlq();
         context = createContext();
+        queueConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
+        topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
     }
 
     @Override
     public void sendMsgWithQueue(MQSendMessage message) throws Exception {
-        ConnectionFactory sendConnFactory;
         Connection sendConn = null;
         Session sendSession = null;
         MessageProducer sendProducer = null;
         try {
-            sendConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
-            sendConn = sendConnFactory.createConnection();
+            sendConn = queueConnFactory.createConnection();
             sendSession = sendConn.createSession(false, 1);
             sendConn.start();
             Queue sendQueue = (Queue) context.lookup(message.getConfig().getQueue());
@@ -58,12 +60,10 @@ public class TongMQService implements MQService {
 
     @Override
     public void sendMsgWithTopic(MQSendMessage message) throws Exception {
-        TopicConnectionFactory topicConnFactory;
         TopicConnection topicConn = null;
         TopicSession topicSession = null;
         TopicPublisher publisher = null;
         try {
-            topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
             topicConn = topicConnFactory.createTopicConnection();
             topicSession = topicConn.createTopicSession(false, 1);
             topicConn.start();
@@ -86,19 +86,19 @@ public class TongMQService implements MQService {
         ConnectionFactory recvConnFactory;
         Connection recvConn = null;
         Session recvSession = null;
+        Destination destination;
         try {
-            recvConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
-            recvConn = recvConnFactory.createConnection();
-            recvSession = recvConn.createSession(false, 1);
-
-            Destination destination;
             if (recvMessage.isTopic()) {
+                recvConnFactory = topicConnFactory;
                 destination = (Topic) context.lookup(recvMessage.getTopic());
             } else {
+                recvConnFactory = queueConnFactory;
                 destination = (Queue) context.lookup(recvMessage.getQueue());
             }
-
+            recvConn = recvConnFactory.createConnection();
+            recvSession = recvConn.createSession(false, 1);
             recvConn.start();
+
             MessageConsumer recvConsumer = recvSession.createConsumer(destination);
             recvConsumer.setMessageListener(message -> {
                 try {
