@@ -24,14 +24,6 @@ public class TongMQService implements MQService {
 
     private static Context context;
 
-    private static Connection sendConn = null;
-    private static Session sendSession = null;
-    private static MessageProducer sendProducer = null;
-
-    private static TopicConnection topicConn = null;
-    private static TopicSession topicSession = null;
-    private static TopicPublisher publisher = null;
-
     @PostConstruct
     @SneakyThrows
     public void init() {
@@ -41,9 +33,13 @@ public class TongMQService implements MQService {
 
     @Override
     public void sendMsgWithQueue(MQSendMessage message) throws Exception {
+        ConnectionFactory sendConnFactory;
+        Connection sendConn = null;
+        Session sendSession = null;
+        MessageProducer sendProducer = null;
         try {
-            ConnectionFactory sendTongConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
-            sendConn = sendTongConnFactory.createConnection();
+            sendConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
+            sendConn = sendConnFactory.createConnection();
             sendSession = sendConn.createSession(false, 1);
             sendConn.start();
             Queue sendQueue = (Queue) context.lookup(message.getConfig().getQueue());
@@ -62,12 +58,16 @@ public class TongMQService implements MQService {
 
     @Override
     public void sendMsgWithTopic(MQSendMessage message) throws Exception {
+        TopicConnectionFactory topicConnFactory;
+        TopicConnection topicConn = null;
+        TopicSession topicSession = null;
+        TopicPublisher publisher = null;
         try {
-            TopicConnectionFactory topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
+            topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
             topicConn = topicConnFactory.createTopicConnection();
             topicSession = topicConn.createTopicSession(false, 1);
-            Topic topic = (Topic) context.lookup(message.getConfig().getTopic());
             topicConn.start();
+            Topic topic = (Topic) context.lookup(message.getConfig().getTopic());
             publisher = topicSession.createPublisher(topic);
             TextMessage textMessage = topicSession.createTextMessage(message.getBody());
             publisher.publish(textMessage);
@@ -83,45 +83,40 @@ public class TongMQService implements MQService {
 
     @Override
     public void recvMsg(MQRecvMessage recvMessage, MQCallback callback) throws Exception {
+        ConnectionFactory recvConnFactory;
+        Connection recvConn = null;
+        Session recvSession = null;
         try {
+            recvConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
+            recvConn = recvConnFactory.createConnection();
+            recvSession = recvConn.createSession(false, 1);
+
+            Destination destination;
             if (recvMessage.isTopic()) {
-                TopicConnectionFactory recvTopicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
-                TopicConnection recvTopicConn = recvTopicConnFactory.createTopicConnection();
-                TopicSession recvTopicSession = recvTopicConn.createTopicSession(false, 1);
-                Topic recvTopic = (Topic) context.lookup(recvMessage.getTopic());
-                recvTopicConn.start();
-                TopicSubscriber subscriber = recvTopicSession.createSubscriber(recvTopic);
-                subscriber.setMessageListener(message -> {
-                    try {
-                        TextMessage textMessage = (TextMessage) message;
-                        callback.onMessage(textMessage.getText(), recvMessage);
-                    } catch (Exception e) {
-                        log.error("TongMQService==>{}==>监听失败", recvMessage);
-                        log.error("TongMQService 异常日志:", e);
-                    }
-                });
+                destination = (Topic) context.lookup(recvMessage.getTopic());
             } else {
-                ConnectionFactory recvQueueConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
-                Connection recvQueueConn = recvQueueConnFactory.createConnection();
-                Session recvQueueSession = recvQueueConn.createSession(false, 1);
-                Queue recvQueue = (Queue) context.lookup(recvMessage.getQueue());
-                recvQueueConn.start();
-                MessageConsumer recvConsumer = recvQueueSession.createConsumer(recvQueue);
-                recvConsumer.setMessageListener(message -> {
-                    try {
-                        TextMessage textMessage = (TextMessage) message;
-                        callback.onMessage(textMessage.getText(), recvMessage);
-                    } catch (Exception e) {
-                        log.error("TongMQService==>{}==>监听失败", recvMessage);
-                        log.error("TongMQService 异常日志:", e);
-                    }
-                });
+                destination = (Queue) context.lookup(recvMessage.getQueue());
             }
+
+            recvConn.start();
+            MessageConsumer recvConsumer = recvSession.createConsumer(destination);
+            recvConsumer.setMessageListener(message -> {
+                try {
+                    TextMessage textMessage = (TextMessage) message;
+                    callback.onMessage(textMessage.getText(), recvMessage);
+                } catch (Exception e) {
+                    log.error("TongMQService==>{}==>监听失败", recvMessage);
+                    log.error("TongMQService 异常日志:", e);
+                }
+            });
             log.info("TongMQService==>{}==>监听启动成功", recvMessage);
         } catch (Exception e) {
             log.error("TongMQService==>{}==>监听失败", recvMessage.toString());
             log.error("TongMQService 异常日志:", e);
             throw new Exception("TongMQService连接失败 brokerUrl:" + tongLQ.getNaming().getProviderUrl() + "异常信息:" + e.getMessage());
+        } finally {
+            if (recvConn != null) recvConn.close();
+            if (recvSession != null) recvSession.close();
         }
     }
 
