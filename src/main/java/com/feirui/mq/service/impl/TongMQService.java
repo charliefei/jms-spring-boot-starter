@@ -25,8 +25,8 @@ public class TongMQService implements JmsService {
     public TongMQService(MQConfigProperties.TongLQ tongLQ) {
         this.tongLQ = tongLQ;
         context = createContext();
-        queueConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
-        topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());
+        queueConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueConnectionFactory());
+        topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicConnectionFactory());
     }
 
     @Override
