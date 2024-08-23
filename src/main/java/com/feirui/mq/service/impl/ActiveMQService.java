@@ -3,10 +3,8 @@ package com.feirui.mq.service.impl;
 import com.feirui.mq.config.MQConfigProperties;
 import com.feirui.mq.domain.dto.MQRecvMessage;
 import com.feirui.mq.domain.dto.MQSendMessage;
-import com.feirui.mq.service.MQCallback;
 import com.feirui.mq.service.JmsService;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
+import com.feirui.mq.service.MQCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.RedeliveryPolicy;
@@ -15,14 +13,11 @@ import javax.jms.*;
 
 @Slf4j
 public class ActiveMQService implements JmsService {
-    @Resource
-    private MQConfigProperties mqConfigProperties;
-    private MQConfigProperties.ActiveMQ activemq;
+    private final MQConfigProperties.ActiveMQ activemq;
     private static ActiveMQConnectionFactory connectionFactory;
 
-    @PostConstruct
-    public void init() {
-        activemq = mqConfigProperties.getActivemq();
+    public ActiveMQService(MQConfigProperties.ActiveMQ activemq) {
+        this.activemq = activemq;
         connectionFactory = connectionFactory();
     }
 

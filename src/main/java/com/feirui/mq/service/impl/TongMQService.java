@@ -5,8 +5,6 @@ import com.feirui.mq.domain.dto.MQRecvMessage;
 import com.feirui.mq.domain.dto.MQSendMessage;
 import com.feirui.mq.service.JmsService;
 import com.feirui.mq.service.MQCallback;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,18 +16,14 @@ import java.util.Properties;
 
 @Slf4j
 public class TongMQService implements JmsService {
-    private MQConfigProperties.TongLQ tongLQ;
-    @Resource
-    private MQConfigProperties mqConfigProperties;
-
+    private final MQConfigProperties.TongLQ tongLQ;
     private static Context context;
     private static ConnectionFactory queueConnFactory;
     private static TopicConnectionFactory topicConnFactory;
 
-    @PostConstruct
     @SneakyThrows
-    public void init() {
-        tongLQ = mqConfigProperties.getTlq();
+    public TongMQService(MQConfigProperties.TongLQ tongLQ) {
+        this.tongLQ = tongLQ;
         context = createContext();
         queueConnFactory = (ConnectionFactory) context.lookup(tongLQ.getQueueFactory());
         topicConnFactory = (TopicConnectionFactory) context.lookup(tongLQ.getTopicFactory());

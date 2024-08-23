@@ -13,13 +13,13 @@ import org.springframework.context.annotation.Configuration;
 public class JmsServiceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "mq.type", havingValue = "activemq")
-    public ActiveMQService activeMQService() {
-        return new ActiveMQService();
+    public ActiveMQService activeMQService(MQConfigProperties mqConfigProperties) {
+        return new ActiveMQService(mqConfigProperties.getActivemq());
     }
 
     @Bean
     @ConditionalOnProperty(name = "mq.type", havingValue = "tlq")
-    public TongMQService tongMQService() {
-        return new TongMQService();
+    public TongMQService tongMQService(MQConfigProperties mqConfigProperties) {
+        return new TongMQService(mqConfigProperties.getTlq());
     }
 }
