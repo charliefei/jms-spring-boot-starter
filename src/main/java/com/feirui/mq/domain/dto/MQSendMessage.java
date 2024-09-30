@@ -13,4 +13,5 @@ public class MQSendMessage implements Serializable {
     private String body;
     private String queue;
     private String topic;
+    private String virtualTopic;
 }

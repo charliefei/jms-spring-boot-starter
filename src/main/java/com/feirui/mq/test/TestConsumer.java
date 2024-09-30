@@ -1,7 +1,8 @@
-package com.feirui.mq;
+package com.feirui.mq.test;
 
 import com.feirui.mq.aspect.MQListener;
 import com.feirui.mq.aspect.MQListenerContainer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,10 +13,10 @@ import org.springframework.stereotype.Component;
  */
 @MQListenerContainer
 @Component
+@Slf4j
 public class TestConsumer {
-
-    @MQListener(topic = "test")
+    @MQListener(virtualTopic = "feirui-test")
     public void onMessage(String text) {
-        System.out.println(text);
+        log.info("TestConsumer接收到消息: {}", text);
     }
 }

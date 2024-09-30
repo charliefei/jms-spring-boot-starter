@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface MQListener {
     String queue() default "";
     String topic() default "";
+    String virtualTopic() default "";
 }

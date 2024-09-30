@@ -8,5 +8,7 @@ public interface JmsService {
 
     void sendMsgWithTopic(MQSendMessage message) throws Exception;
 
+    void sendMsgWithVirtualTopic(MQSendMessage message) throws Exception;
+
     void recvMsg(MQRecvMessage message, MQCallback callback) throws Exception;
 }

@@ -76,6 +76,11 @@ public class TongMQService implements JmsService {
     }
 
     @Override
+    public void sendMsgWithVirtualTopic(MQSendMessage message) throws Exception {
+        sendMsgWithTopic(message);
+    }
+
+    @Override
     public void recvMsg(MQRecvMessage recvMessage, MQCallback callback) throws Exception {
         ConnectionFactory recvConnFactory;
         Connection recvConn = null;

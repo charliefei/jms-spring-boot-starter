@@ -39,7 +39,9 @@ public class MQListenerScanner implements ApplicationListener<ContextRefreshedEv
                             throw new IllegalArgumentException("错误的参数类型，请参考MQCallback.onMessage() ：" + method);
                         }
 
-                        MQRecvMessage mqRecvMessage = new MQRecvMessage(mqListener.queue(), mqListener.topic());
+                        MQRecvMessage mqRecvMessage = new MQRecvMessage(mqListener.queue(),
+                                mqListener.topic(),
+                                mqListener.virtualTopic());
                         try {
                             // 核心
                             service.recvMsg(mqRecvMessage, (message) -> method.invoke(bean, message));

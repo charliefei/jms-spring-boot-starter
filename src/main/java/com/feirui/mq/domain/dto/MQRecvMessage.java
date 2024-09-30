@@ -11,8 +11,13 @@ import org.springframework.util.StringUtils;
 public class MQRecvMessage {
     private String queue;
     private String topic;
+    private String virtualTopic;
 
     public boolean isTopic() {
         return StringUtils.hasText(topic);
+    }
+
+    public boolean isVirtualTopic() {
+        return StringUtils.hasText(virtualTopic);
     }
 }
